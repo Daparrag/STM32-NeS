@@ -4,6 +4,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+
 typedef struct _Sprite Sprite;
 typedef union _Ctrl Ctrl;
 typedef union _Mask Mask;
@@ -94,13 +104,13 @@ union _Addr
         unsigned h : 7;
     };
     	unsigned addr : 14;   // current memory address 
-    	unsigned r : 15;
+    	unsigned r : 15;       //metatable memory address 
 };
 
 
 struct _PPU
 {
-	Mirroring mirroing;        // mirroing mode.
+	Mirroring mirroring;        // mirroing mode.
 	uint8_t ciRam[0x800];      // vRAM for nametables.	
 	uint8_t cgRam[0x20];       // vRAM for palettes.
 	uint8_t oamMem[0x100]; 	   // vRAM for sprite propoerties 
@@ -123,9 +133,12 @@ struct _PPU
     int scanline, dot;
     uint8_t frameOdd;
 
+    //video bufer
+
+
 };
 
-uint8_t PPU_access (uint16_t index, uint8_t wr, uint8_t v );
+uint8_t PPU_access (uint8_t wr, uint16_t addr_idx, uint8_t val );
 void set_mirrowing(Mirroring mode);
 void step();
 void reset();
