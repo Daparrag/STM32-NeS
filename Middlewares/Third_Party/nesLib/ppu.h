@@ -3,15 +3,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "common.h"
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-
-#ifndef FALSE
-#define FALSE 0
-#endif
 
 
 typedef struct _Sprite Sprite;

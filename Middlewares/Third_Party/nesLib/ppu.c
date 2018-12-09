@@ -1,5 +1,5 @@
 #include "ppu.h"
-
+#include "palette.h"
 PPU nes_ppu;
 uint32_t pixels[256 * 240];     // Video buffer
 

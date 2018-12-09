@@ -10,4 +10,8 @@
 #define FALSE 0
 #endif 
 
-#endif
+#define TEST_MARIO
+#endif /*__Nes_common_*/
+
+
+
