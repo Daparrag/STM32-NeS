@@ -1,7 +1,7 @@
 #include "ppu.h"
 #include "palette.h"
 PPU nes_ppu;
-uint32_t pixels[256 * 240];     // Video buffer
+uint16_t pixels[256 * 240];     // Video buffer
 
 
 static void eval_sprites();
@@ -281,7 +281,53 @@ void load_sprites()
 /* Process a pixel, draw it if it's on screen */
 void pixel()
 {
-	
+	uint8_t palette = 0, objPriority = 0, objPalette = 0;
+	int x = nes_ppu.dot - 2;
+
+	// x and y position on the current screen.
+	if(nes_ppu.scanline < 240 && x >=0 && x < 256)
+	{
+
+		if(nes_ppu.mask.bg && !(!nes_ppu.mask.bgLeft && x < 8) )
+		{
+			//compute background
+				palette = ( NTH_BIT(nes_ppu.bgShiftH, 15 - nes_ppu.fX) << 1) |
+							NTH_BIT(nes_ppu.bgShiftL, 15 - nes_ppu.fX);
+
+				if(palette)
+					palette |= ( NTH_BIT(nes_ppu.bgShiftH, 7 - nes_ppu.fX) << 1) |
+								 NTH_BIT(nes_ppu.bgShiftL, 7 - nes_ppu.fX)			<< 2;
+		}
+		//Sprites
+		if(nes_ppu.mask.spr && !(!nes_ppu.mask.sprLeft && x < 8))
+		{	
+			uint8_t i;
+			
+			for(i = 7; i >=0; i--)
+			{
+				if(nes_ppu.oam[i].id == 64) continue; //void entry
+				uint8_t sprX = x - nes_ppu.oam[i].x;
+				if(sprX >= 8) continue;				  //Not in range.
+				if(nes_ppu.oam[i].attr & 0x40) sprX ^= 7;//Horizontal flip
+
+				uint8_t sptPalette = ( NTH_BIT(nes_ppu.oam[i].dataH, 7 - sprX) << 1) |
+									   NTH_BIT(nes_ppu.oam[i].dataL, 7 - sprX);
+
+				if(sptPalette == 0)continue;// Transparent Pixel
+
+				if(nes_ppu.oam[i].id == 0 && palette && x != 255) nes_ppu.status.sprHit = TRUE;
+				sptPalette |= (nes_ppu.oam[i].attr & 3) << 2;
+				objPalette  =  sptPalette + 16;
+				objPriority = nes_ppu.oam[i].attr & 0x20;
+			}
+
+			// evaluate priority:
+			if(objPalette && (palette == 0 || objPriority == 0)) palette = objPalette;
+
+			pixels[nes_ppu.scanline * 256 + x] = nesRgb[rd(0x3F00 + (rendering() ? palette : 0))];
+		}
+
+	}	
 	
 }
 

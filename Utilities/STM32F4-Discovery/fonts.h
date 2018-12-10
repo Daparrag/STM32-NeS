@@ -1,3 +1,4 @@
+
 /**
   ******************************************************************************
   * @file    fonts.h
@@ -50,13 +51,17 @@
   * @{
   */ 
 typedef struct _tFont
-{    
+{
+  uint8_t  mul;
   const uint16_t *table;
   uint16_t Width;
   uint16_t Height;
   
 } sFONT;
 
+extern sFONT Font48x72;
+extern sFONT Font32x48;
+extern sFONT Font24x36;
 extern sFONT Font16x24;
 extern sFONT Font12x12;
 extern sFONT Font8x12;

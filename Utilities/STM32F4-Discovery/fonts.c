@@ -932,20 +932,44 @@ const uint16_t ASCII8x8_Table [] = {
     0x00, 0x00, 0x00, 0x60, 0x92, 0x0c, 0x00, 0x00,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
+sFONT Font48x72 = {
+	3,
+	ASCII16x24_Table,
+	48, /* Width */
+	72, /* Height */
+};
+
+sFONT Font32x48 = {
+	2,
+	ASCII16x24_Table,
+	32, /* Width */
+	48, /* Height */
+};
+
+sFONT Font24x36 = {
+	3,
+	ASCII8x12_Table,
+	24, /* Width */
+	36, /* Height */
+};
+
 
 sFONT Font16x24 = {
+  1,
   ASCII16x24_Table,
   16, /* Width */
   24, /* Height */
 };
 
 sFONT Font12x12 = {
+  1,
   ASCII12x12_Table,
   12, /* Width */
   12, /* Height */
 };
 
 sFONT Font8x12 = {
+  1,
   ASCII8x12_Table,
   8, /* Width */
   12, /* Height */
@@ -953,6 +977,7 @@ sFONT Font8x12 = {
 
 
 sFONT Font8x8 = {
+  1,
   ASCII8x8_Table,
   8, /* Width */
   8, /* Height */

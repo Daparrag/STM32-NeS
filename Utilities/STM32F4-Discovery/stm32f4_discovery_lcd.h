@@ -92,6 +92,15 @@ typedef struct
 #define SSD2119_OUTPUT_CTRL_REG       0x01
 #define SSD2119_LCD_DRIVE_AC_CTRL_REG 0x02
 #define SSD2119_PWR_CTRL_1_REG        0x03
+
+//è una prova
+#define LCD_REG_3					  SSD2119_PWR_CTRL_1_REG
+//#define LCD_REG_3					  SSD2119_DISPLAY_CTRL_REG
+
+#define LCD_REG_34 					SSD2119_RAM_DATA_REG
+//#define LCD_REG_3 					SSD2119_ENTRY_MODE_REG
+
+
 #define SSD2119_DISPLAY_CTRL_REG      0x07
 #define SSD2119_FRAME_CYCLE_CTRL_REG  0x0B
 #define SSD2119_PWR_CTRL_2_REG        0x0C
@@ -104,6 +113,10 @@ typedef struct
 #define SSD2119_GEN_IF_CTRL_REG       0x15
 #define SSD2119_PWR_CTRL_5_REG        0x1E
 #define SSD2119_RAM_DATA_REG          0x22
+
+//è una prova
+//#define LCD_REG_34					  SSD2119_RAM_DATA_REG
+
 #define SSD2119_FRAME_FREQ_REG        0x25
 #define SSD2119_ANALOG_SET_REG        0x26
 #define SSD2119_VCOM_OTP_1_REG        0x28
@@ -294,17 +307,22 @@ void LCD_SetTextColor(__IO uint16_t Color);
 void LCD_SetBackColor(__IO uint16_t Color);
 void LCD_ClearLine(uint16_t Line);
 void LCD_Clear(uint16_t Color);
-void LCD_SetCursor(uint16_t Xpos, uint16_t Ypos);
+//void LCD_SetCursor(uint16_t Xpos, uint16_t Ypos);
 void LCD_DrawChar(uint16_t Xpos, uint16_t Ypos, const uint16_t *c);
 void LCD_DisplayChar(uint16_t Line, uint16_t Column, uint8_t Ascii);
 void LCD_SetFont(sFONT *fonts);
 sFONT *LCD_GetFont(void);
 void LCD_DisplayStringLine(uint16_t Line, uint8_t *ptr);
+void LCD_DisplayStringXY(uint16_t xpos, uint16_t ypos, uint8_t *ptr);
 void LCD_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Height, uint16_t Width);
 void LCD_WindowModeDisable(void);
 void LCD_DrawLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction);
 void LCD_DrawRect(uint16_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width);
+void LCD_DrawFilledRect(uint16_t X_tl, uint16_t Y_tl, uint16_t X_br, uint16_t Y_br,
+						uint16_t BorderColor, uint16_t BackgroundColor);
 void LCD_DrawCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius);
+void LCD_DrawFilledCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius,
+						  uint16_t BorderColor, uint16_t BackgroundColor);
 void LCD_DrawMonoPict(const uint32_t *Pict);
 void LCD_WriteBMP(uint32_t BmpAddress);
 void LCD_DrawUniLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
@@ -315,6 +333,9 @@ void LCD_PolyLineRelative(pPoint Points, uint16_t PointCount);
 void LCD_ClosedPolyLine(pPoint Points, uint16_t PointCount);
 void LCD_ClosedPolyLineRelative(pPoint Points, uint16_t PointCount);
 void LCD_FillPolyLine(pPoint Points, uint16_t PointCount);
+void LCD_DrawPicture(uint16_t startX, uint16_t startY, uint16_t width, uint16_t height, uint8_t* picture);
+void LCD_RGB_draw_pixel(uint8_t x, uint8_t y, uint16_t color);
+
 /**
   * @}
   */ 

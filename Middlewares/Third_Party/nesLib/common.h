@@ -10,7 +10,11 @@
 #define FALSE 0
 #endif 
 
-#define TEST_MARIO
+#define NTH_BIT(x,n) ( ((x) >> n)  & 1 )
+
+//#define NES_RGB_PC10
+#define NES_RGB_CLASIC
+//#define TEST_MARIO
 #endif /*__Nes_common_*/
 
 

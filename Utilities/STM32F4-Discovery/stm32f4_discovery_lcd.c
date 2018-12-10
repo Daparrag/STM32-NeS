@@ -1,3 +1,4 @@
+
 /**
   ******************************************************************************
   * @file    stm324xg_discovery_lcd.c
@@ -528,6 +529,20 @@ uint16_t LCD_ReadRAM(void)
 }
 
 /**
+  * @brief  draw pixel on screen
+  * @retval None
+  */
+void LCD_RGB_draw_pixel(uint8_t x, uint8_t y, uint16_t color)
+{
+	LCD_SetCursor(x, y);
+	LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+
+	LCD_Data = color;
+}
+
+
+
+/**
   * @brief  Test LCD Display
   * @retval None
   */
@@ -677,6 +692,56 @@ void LCD_Clear(uint16_t Color)
   }  
 }
 
+
+/**
+ * @brief  Displays a picture.
+ * @param  startX: starting point x coordinate.
+ * @param  startY: starting point y coordinate.
+ * @param  width:  picture width.
+ * @param  height: picture height.
+ * @param  picture: pointer to picture to be displayed.
+ * @retval None
+ */
+void LCD_DrawPicture(uint16_t startX, uint16_t startY, uint16_t width,
+					 uint16_t height, uint8_t* picture)
+{
+  uint16_t lastX = startX + (width - 1);
+  uint16_t lastY = startY + (height - 1);
+  uint16_t x = startX;
+  uint16_t y = lastY, oldY = y;
+  uint16_t *pointer;
+
+  //uint16_t size = width * height;
+  //uint16_t size = 153654;
+  uint32_t index = 0;
+  /* Get bitmap data address offset */
+  index = *(__IO uint16_t *) (picture + 10);
+  index |= (*(__IO uint16_t *) (picture + 12)) << 16;
+  picture += index;
+
+  pointer = (uint16_t *)picture;
+  //pointer += size;
+  //LCD_SetCursor(LCD_PIXEL_WIDTH - startX - 1, LCD_PIXEL_HEIGHT - startY - 1);
+  LCD_SetCursor(startX, lastY);
+//  LCD_WriteRAM_Prepare();
+  do
+  {
+		LCD_WriteRAM_Prepare();
+		LCD_Data = *pointer;
+		if(x == lastX){
+			x = startX;
+			oldY = y;
+			y--;
+//			LCD_WriteRAM_Prepare();
+		}
+		else{
+			x++;
+		}
+		LCD_SetCursor(x , y);
+		pointer++;
+  }  while(oldY != startY);
+}
+
 /**
   * @brief  Displays a pixel.
   * @param  x: pixel x.
@@ -713,7 +778,8 @@ void LCD_DrawChar(uint16_t Xpos, uint16_t Ypos, const uint16_t *c)
     for(i = 0; i < LCD_Currentfonts->Width; i++)
     {
   
-      if((((c[index] & ((0x80 << ((LCD_Currentfonts->Width / 12 ) * 8 ) ) >> i)) == 0x00) &&(LCD_Currentfonts->Width <= 12))||
+      if((((c[index] & ((0x80 << ((LCD_Currentfonts->Width / 12 ) * 8 ) ) >> i))
+		   == 0x00) &&(LCD_Currentfonts->Width <= 12))||
         (((c[index] & (0x1 << i)) == 0x00)&&(LCD_Currentfonts->Width > 12 )))
 
       {
@@ -725,6 +791,52 @@ void LCD_DrawChar(uint16_t Xpos, uint16_t Ypos, const uint16_t *c)
       } 
     }
     Xaddress++;
+    LCD_SetCursor(Ypos, Xaddress);
+  }
+}
+
+/**
+  * @brief  Draws a character on LCD.
+  * @param  Xpos: the Line where to display the character shape.
+  * @param  Ypos: start column address.
+  * @param  c: pointer to the character data.
+  * @retval None
+  */
+void LCD_DrawCharXY(uint16_t Xpos, uint16_t Ypos, const uint16_t *c)
+{
+  uint32_t index = 0, i = 0, idx, idx2;
+  uint16_t  Xaddress = 0;
+  Xaddress = Xpos;
+  uint16_t Yadd = Ypos;
+  uint16_t bmapw;
+
+  LCD_SetCursor(Ypos, Xaddress);
+
+  for(idx = 0; idx < LCD_Currentfonts->Height; idx++)
+  {
+	index = idx / LCD_Currentfonts->mul;
+    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+    for(idx2 = 0; idx2 < LCD_Currentfonts->Width; idx2++)
+    {
+      i = idx2 / LCD_Currentfonts->mul;
+      bmapw = LCD_Currentfonts->Width / LCD_Currentfonts->mul;
+      Yadd++;
+      if((((c[index] & ((0x80 << ((bmapw / 12 ) * 8 ) ) >> i))
+		   == 0x00) &&(bmapw <= 12))||
+        (((c[index] & (0x1 << i)) == 0x00)&&(bmapw > 12 )))
+
+      {
+//        LCD_WriteRAM(BackColor);
+    	    LCD_SetCursor(Yadd, Xaddress);
+    	    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+      }
+      else
+      {
+        LCD_WriteRAM(TextColor);
+      }
+    }
+    Xaddress++;
+    Yadd=Ypos;
     LCD_SetCursor(Ypos, Xaddress);
   }
 }
@@ -742,6 +854,30 @@ void LCD_DisplayChar(uint16_t Line, uint16_t Column, uint8_t Ascii)
 {
   Ascii -= 32;
   LCD_DrawChar(Line, Column, &LCD_Currentfonts->table[Ascii * LCD_Currentfonts->Height]);
+}
+
+void LCD_DisplayCharXY(uint16_t xpos, uint16_t ypos, uint8_t Ascii)
+{
+  Ascii -= 32;
+  LCD_DrawCharXY(ypos, xpos, &LCD_Currentfonts->table[Ascii * LCD_Currentfonts->Height / LCD_Currentfonts->mul]);
+}
+
+
+void LCD_DisplayStringXY(uint16_t xpos, uint16_t ypos, uint8_t *ptr)
+{
+	/* Send the string character by character on lCD */
+	while (*ptr != 0)
+	{
+	    /* Display one character on LCD */
+	    LCD_DisplayCharXY(xpos, ypos, *ptr);
+	    /* Increase the x position by font size */
+	    xpos += LCD_Currentfonts->Width;
+		if (xpos >= LCD_PIXEL_WIDTH) {
+			break;
+		}
+	    /* Point on the next character */
+	    ptr++;
+	}
 }
 
 /**
@@ -779,10 +915,10 @@ void LCD_DisplayStringLine(uint16_t Line, uint8_t *ptr)
   * @param  Width: display window Height.
   * @retval None
   */
+  /*
 void LCD_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t Height)
 {
   uint32_t value = 0;	
-
   LCD_WriteReg(SSD2119_H_RAM_START_REG, Xpos);
 	
   if ((Xpos+width) >= LCD_PIXEL_WIDTH) {
@@ -799,6 +935,29 @@ void LCD_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t
   value |= Xpos;
   LCD_WriteReg(SSD2119_V_RAM_POS_REG, value);
   LCD_SetCursor(Xpos, Ypos);
+}*/
+
+void LCD_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Height, uint16_t Width)
+{
+  if(Xpos >= Height)
+  {
+    LCD_WriteReg(0x0044, (Xpos - Height +1));
+  }
+  else
+  {
+    LCD_WriteReg(0x0044, 0x0000);
+  }
+  if(Ypos >= Width)
+  {
+    LCD_WriteReg(0x0045, (Ypos - Width +1));
+  }
+  else
+  {
+    LCD_WriteReg(0x0045, 0x0000);
+  }
+  LCD_WriteReg(0x0046, Ypos);
+  LCD_SetCursor(Xpos, Ypos);
+
 }
 
 /**
@@ -810,7 +969,7 @@ void LCD_WindowModeDisable(void)
 {
 #if 0
   LCD_SetDisplayWindow(239, 0x13F, 240, 320);
-  LCD_WriteReg(LCD_REG_3, 0x1018);    
+  LCD_WriteReg(LCD_REG_3, 0x1018);
 #endif
 }
 
@@ -863,6 +1022,24 @@ void LCD_DrawRect(uint16_t Xpos, uint16_t Ypos, uint8_t Height, uint16_t Width)
   
   LCD_DrawLine(Xpos, Ypos, Height, LCD_DIR_HORIZONTAL);
   LCD_DrawLine(Xpos, (Ypos + Width), Height, LCD_DIR_HORIZONTAL);
+}
+
+/**
+  * @brief  Displays a filled circle.
+  * @param  Xpos: 				specifies the X position.
+  * @param  Ypos: 				specifies the Y position.
+  * @param  Radius
+  * @param  BorderColor:		specifies the color of the circle
+  * @param  BackgroundColor:	specifies the color of the filling
+  * @retval None
+  */
+void LCD_DrawFilledCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius, uint16_t BorderColor, uint16_t BackgroundColor){
+	LCD_SetTextColor(BorderColor);
+	LCD_DrawCircle(Xpos, Ypos, Radius--);
+	LCD_SetTextColor(BackgroundColor);
+	PutPixel(Xpos, Ypos);
+	while(Radius != 0)
+		LCD_DrawCircle(Xpos, Ypos, Radius--);
 }
 
 /**
@@ -954,7 +1131,7 @@ void LCD_DrawMonoPict(const uint32_t *Pict)
   */
 void LCD_WriteBMP(uint32_t BmpAddress)
 {
-#if 0
+#if 1
   uint32_t index = 0, size = 0;
   /* Read bitmap size */
   size = *(__IO uint16_t *) (BmpAddress + 2);
@@ -982,6 +1159,49 @@ void LCD_WriteBMP(uint32_t BmpAddress)
   /* AM = 1 (address is updated in vertical writing direction) */
   LCD_WriteReg(LCD_REG_3, 0x1018);
 #endif
+}
+
+/**
+  * @brief  Displays a filled rectangle.
+  * @param  X_tl: 				specifies the X top left corner position.
+  * @param  Y_tl: 				specifies the Y top left corner position.
+  * @param  X_br: 				specifies the X bottom right corner position.
+  * @param  Y_br: 				specifies the Y bottom right corner position.
+  * @param  BorderColor:		specifies the color of the circle
+  * @param  BackgroundColor:	specifies the color of the filling
+  * @retval None
+  */
+void LCD_DrawFilledRect(uint16_t X_tl, uint16_t Y_tl, uint16_t X_br, uint16_t Y_br,
+						uint16_t BorderColor, uint16_t BackgroundColor)
+{
+	LCD_SetTextColor(BorderColor);
+	LCD_DrawUniLine(X_tl,
+					Y_tl,
+					X_br,
+					Y_tl);
+	LCD_DrawUniLine(X_tl,
+					Y_tl,
+					X_tl,
+					Y_br);
+	LCD_DrawUniLine(X_br,
+					Y_tl,
+					X_br,
+					Y_br);
+	LCD_DrawUniLine(X_br,
+					Y_br,
+					X_tl,
+					Y_br);
+	LCD_SetTextColor(BackgroundColor);
+	X_tl++;
+	Y_tl++;
+	Y_br--;
+	while(X_tl != X_br ){
+		LCD_DrawUniLine(X_tl,
+						Y_tl,
+						X_tl,
+						Y_br);
+		X_tl++;
+	}
 }
 
 /**
@@ -1014,6 +1234,25 @@ void LCD_DrawFullRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Hei
 
   LCD_SetTextColor(TextColor);
 }
+
+/*
+void LCD_DrawFilledRect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
+{
+  LCD_SetTextColor(TextColor);
+  LCD_DrawLine(Xpos, Ypos, Width, LCD_DIR_HORIZONTAL);
+  LCD_DrawLine(Xpos, (Ypos+Height), Width, LCD_DIR_HORIZONTAL);
+
+  LCD_DrawLine(Xpos, Ypos, Height, LCD_DIR_VERTICAL);
+  LCD_DrawLine((Xpos+Width-1), Ypos, Height, LCD_DIR_VERTICAL);
+  Height--;
+  Ypos++;
+  LCD_SetTextColor(BackColor);
+  while(Height--)
+  {
+    LCD_DrawLine(Xpos, Ypos++, Width, LCD_DIR_HORIZONTAL);
+  }
+  LCD_SetTextColor(TextColor);
+}*/
 
 /**
   * @brief  Displays a full circle.
