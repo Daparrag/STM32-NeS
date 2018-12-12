@@ -1,7 +1,7 @@
 #ifndef _MAPPER_H_
 #define _MAPPER_H_
 
-#include common.h
+#include "common.h"
 
 
 
@@ -32,9 +32,11 @@ typedef struct
 	 uint32_t prgSize, chrSize, prgRamSize;
 }MAPPER;
 
+extern MAPPER mapper;
 
-
-void MAPPER_init();
+void MAPPER_init(uint8_t * rom);
+void map_prg(int pageKBs, int slot, int bank);
+void map_chr(int pageKBs, int slot, int bank)
 
 
 #endif

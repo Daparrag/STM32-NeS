@@ -1,5 +1,7 @@
-#include "Mapper.h"
+#include "mapper.h"
+#include "ppu.h"
 #include "common.h"
+
 
 MAPPER mapper;
 
@@ -46,5 +48,35 @@ void map_chr(int pageKBs, int slot, int bank)
 
 void mapper(uint8_t * rom)
 {
+	mapper.rom = rom;
+	//Reading from header
+	mapper.prgSize = rom[4] * 0x4000;
+	mapper.chrSize = rom[5] * 0x2000;
+	mapper.prgRamSize   = rom[8] ? rom[8] * 0x2000 : 0x2000;
+	set_mirrowing((rom[6] & 1) ? VERTICAL : HORIZONTAL);
+	mapper.prg = rom + 16;
+	mapper.prgRam = (uint8_t *) malloc(mapper.prgRamSize);
+
+	//CHR ROM:
+	if(mapper.chrSize)
+		mapper.chr = rom +16 +mapper.prgSize;
+	//CHR RAM:
+	else
+	{
+		mapper.chrRam  = TRUE;
+		mapper.chrSize = 0x2000;
+		mapper.chr = (uint8_t *) malloc(mapper.chrSize);		 
+
+	}
+
+}
+
+void mapper_delete()
+{
+
+	free(mapper.rom);
+	free(mapper.prgRam);
+	if(mapper.chrRam)
+		free(chr);
 
 }
