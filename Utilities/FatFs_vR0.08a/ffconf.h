@@ -119,6 +119,9 @@
 /
 /  Note that output of the f_readdir fnction is affected by this option. */
 
+#define _USE_FIND		1
+/* This option switches filtered directory read feature and related functions,
+/  f_findfirst() and f_findnext(). (0:Disable or 1:Enable) */
 
 
 /*---------------------------------------------------------------------------/

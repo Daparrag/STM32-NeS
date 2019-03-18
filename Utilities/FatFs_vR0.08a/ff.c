@@ -85,7 +85,7 @@
 /                   Fixed f_mkfs() creates wrong FAT32 volume.
 /---------------------------------------------------------------------------*/
 
-#include "ff.h"			/* FatFs configurations and declarations */
+#include "ff.h"		/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
 
 
@@ -1218,6 +1218,110 @@ FRESULT dir_read (
 
 	return res;
 }
+
+#if _USE_FIND
+
+static
+WCHAR get_achar (		/* Get a character and advances ptr 1 or 2 */
+	const TCHAR** ptr	/* Pointer to pointer to the SBCS/DBCS/Unicode string */
+)
+{
+	WCHAR chr;
+
+#if !_LFN_UNICODE
+	chr = (BYTE)*(*ptr)++;					/* Get a byte */
+	if (IsLower(chr)) chr -= 0x20;			/* To upper ASCII char */
+	if (IsDBCS1(chr) && IsDBCS2(**ptr))		/* Get DBC 2nd byte if needed */
+		chr = chr << 8 | (BYTE)*(*ptr)++;
+#ifdef _EXCVT
+	if (chr >= 0x80) chr = ExCvt[chr - 0x80];	/* To upper SBCS extended char */
+#endif
+#else
+	chr = ff_wtoupper(*(*ptr)++);			/* Get a word and to upper */
+#endif
+	return chr;
+}
+
+
+static
+int pattern_matching (	/* 0:mismatched, 1:matched */
+	const TCHAR* pat,	/* Matching pattern */
+	const TCHAR* nam,	/* String to be tested */
+	int skip,			/* Number of pre-skip chars (number of ?s) */
+	int inf				/* Infinite search (* specified) */
+)
+{
+	const TCHAR *pp, *np;
+	WCHAR pc, nc;
+	int nm, nx;
+
+
+	while (skip--) {				/* Pre-skip name chars */
+		if (!get_achar(&nam)) return 0;	/* Branch mismatched if less name chars */
+	}
+	if (!*pat && inf) return 1;		/* (short circuit) */
+
+	do {
+		pp = pat; np = nam;			/* Top of pattern and name to match */
+		for (;;) {
+			if (*pp == '?' || *pp == '*') {	/* Wildcard? */
+				nm = nx = 0;
+				do {				/* Analyze the wildcard chars */
+					if (*pp++ == '?') nm++; else nx = 1;
+				} while (*pp == '?' || *pp == '*');
+				if (pattern_matching(pp, np, nm, nx)) return 1;	/* Test new branch (recurs upto number of wildcard blocks in the pattern) */
+				nc = *np; break;	/* Branch mismatched */
+			}
+			pc = get_achar(&pp);	/* Get a pattern char */
+			nc = get_achar(&np);	/* Get a name char */
+			if (pc != nc) break;	/* Branch mismatched? */
+			if (!pc) return 1;		/* Branch matched? (matched at end of both strings) */
+		}
+		get_achar(&nam);			/* nam++ */
+	} while (inf && nc);			/* Retry until end of name if infinite search is specified */
+
+	return 0;
+}
+
+
+FRESULT f_findfirst (DIR* dp,				/* Pointer to the blank directory object */
+		FILINFO* fno,			/* Pointer to the file information structure */
+		const TCHAR* path,		/* Pointer to the directory to open */
+		const TCHAR* pattern	/* Pointer to the matching pattern */)
+{
+
+	FRESULT res;
+
+	dp->pat = pattern;		/* Save pointer to pattern string */
+	res = f_opendir(dp, path);		/* Open the target directory */
+	if (res == FR_OK)
+		res = f_findnext(dp, fno);	/* Find the first item */
+	return res;
+}
+
+
+FRESULT f_findnext (
+	DIR* dp,		/* Pointer to the open directory object */
+	FILINFO* fno	/* Pointer to the file information structure */
+)
+{
+	FRESULT res;
+
+
+	for (;;) {
+		res = f_readdir(dp, fno);		/* Get a directory item */
+		if (res != FR_OK || !fno || !fno->fname[0]) break;	/* Terminate if any error or end of directory */
+#if _USE_LFN
+		if (fno->lfname && pattern_matching(dp->pat, fno->lfname, 0, 0)) break;	/* Test for LFN if exist */
+#endif
+		if (pattern_matching(dp->pat, fno->fname, 0, 0)) break;	/* Test for SFN */
+	}
+	return res;
+
+}
+
+
+#endif /*_FIND && _FS_MINIMIZE <= 1*/
 #endif
 
 
@@ -3734,3 +3838,5 @@ int f_printf (
 
 #endif /* !_FS_READONLY */
 #endif /* _USE_STRFUNC */
+
+

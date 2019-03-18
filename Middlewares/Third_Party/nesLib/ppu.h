@@ -132,8 +132,8 @@ struct _PPU
 };
 
 uint8_t PPU_access (uint8_t wr, uint16_t addr_idx, uint8_t val );
-void set_mirrowing(Mirroring mode);
-void step();
-void reset();
+void set_mirroring(Mirroring mode);
+void PPU_step();
+void PPU_reset();
 
 #endif /*_ppu_h*/

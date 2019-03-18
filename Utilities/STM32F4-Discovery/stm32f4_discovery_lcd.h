@@ -213,10 +213,10 @@ typedef struct
 
 #define White		         LCD_COLOR_WHITE
 #define Black		         LCD_COLOR_BLACK
-#define Red		         LCD_COLOR_RED
+#define Red		         	 LCD_COLOR_RED
 #define Blue		         LCD_COLOR_BLUE
 #define Green		         LCD_COLOR_GREEN
-#define Cyan                     LCD_COLOR_CYAN
+#define Cyan                 LCD_COLOR_CYAN
 
 /** 
   * @brief  LCD Lines depending on the chosen fonts.  
@@ -266,7 +266,7 @@ typedef struct
 /** 
   * @brief LCD default font 
   */ 
-#define LCD_DEFAULT_FONT         Font16x24
+#define LCD_DEFAULT_FONT         Font8x12
 
 /** 
   * @brief  LCD Direction  
@@ -360,6 +360,8 @@ void LCD_DisplayOff(void);
   */ 
 void LCD_CtrlLinesConfig(void);
 void LCD_FSMCConfig(void);
+
+void LCD_nes_rowplot(uint16_t * pixels , uint16_t row, uint16_t length, uint16_t offset);
 /**
   * @}
   */

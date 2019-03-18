@@ -1,13 +1,18 @@
 #include "ppu.h"
+#include "CPU_6502.h"
 #include "palette.h"
+#include "cartridge.h"
+#include "memlib.h"
+#include <stdio.h>
+#include <stdint.h>
 PPU nes_ppu;
-uint16_t pixels[256 * 240];     // Video buffer
+static uint16_t pixels[256 * 240]={0x00};     // Video buffer
 
 
 static void eval_sprites();
 static void clear_oam();
 static uint16_t nt_mirror(uint16_t addr );
-static void set_mirroring(Mirroring mode);
+
 
 inline uint8_t rendering () { return (nes_ppu.mask.bg || nes_ppu.mask.spr); }
 
@@ -291,12 +296,12 @@ void pixel()
 		if(nes_ppu.mask.bg && !(!nes_ppu.mask.bgLeft && x < 8) )
 		{
 			//compute background
-				palette = ( NTH_BIT(nes_ppu.bgShiftH, 15 - nes_ppu.fX) << 1) |
-							NTH_BIT(nes_ppu.bgShiftL, 15 - nes_ppu.fX);
+				palette = ( NTH_BIT(nes_ppu.bgShiftH, (15 - nes_ppu.fX) << 1)) |
+							NTH_BIT(nes_ppu.bgShiftL, (15 - nes_ppu.fX));
 
 				if(palette)
-					palette |= ( NTH_BIT(nes_ppu.bgShiftH, 7 - nes_ppu.fX) << 1) |
-								 NTH_BIT(nes_ppu.bgShiftL, 7 - nes_ppu.fX)			<< 2;
+					palette |= ( NTH_BIT(nes_ppu.bgShiftH, (7 - nes_ppu.fX) << 1)) |
+								 NTH_BIT(nes_ppu.bgShiftL, (7 - nes_ppu.fX))			<< 2;
 		}
 		//Sprites
 		if(nes_ppu.mask.spr && !(!nes_ppu.mask.sprLeft && x < 8))
@@ -310,8 +315,8 @@ void pixel()
 				if(sprX >= 8) continue;				  //Not in range.
 				if(nes_ppu.oam[i].attr & 0x40) sprX ^= 7;//Horizontal flip
 
-				uint8_t sptPalette = ( NTH_BIT(nes_ppu.oam[i].dataH, 7 - sprX) << 1) |
-									   NTH_BIT(nes_ppu.oam[i].dataL, 7 - sprX);
+				uint8_t sptPalette = ( NTH_BIT(nes_ppu.oam[i].dataH, (7 - sprX)) << 1) |
+									   NTH_BIT(nes_ppu.oam[i].dataL, (7 - sprX));
 
 				if(sptPalette == 0)continue;// Transparent Pixel
 
@@ -403,7 +408,9 @@ uint8_t PPU_access(uint8_t wop, uint16_t addr_idx, uint8_t val)
 						res = buffer = rd(nes_ppu.vAddr.addr);
 
 					}
-				nes_ppu.vAddr.addr += nes_ppu.vAddr.addr += nes_ppu.ctrl.incr ?32 : 1; 
+
+				nes_ppu.vAddr.addr += nes_ppu.ctrl.incr ? 32 : 1 ;
+
 				break;
 		}
 	
@@ -437,7 +444,7 @@ void scanline_cycle(Scanline s)
 
 	}else if (s == POST && nes_ppu.dot ==0 ){
 		/*here is where we plot the pixel on the LCD*/
-		LCD_NES_new_frame(pixels);
+		//LCD_NES_new_frame(pixels);
 
 	}else if ((s == VISIBLE) || (s == PRE)){
 
@@ -472,7 +479,7 @@ void scanline_cycle(Scanline s)
 
 						// Load Background (low bits):
 						case 5:  addr  = bg_addr(); break;
-						case 6: nes_ppu.bgL = rd(addr);
+						case 6: nes_ppu.bgL = rd(addr); break;
 						// Load Background (high bits):
 						case 7: addr += 8;         break;
 						case 0:  nes_ppu.bgH   = rd(addr); h_scroll(); break; //end of vertical blanking 
@@ -495,7 +502,7 @@ void scanline_cycle(Scanline s)
 
 		}
 		//signal scanline to mapper
-		if(nes_ppu.dot == 260 && rendering() ) Cartridge_signal_Sacanline();
+		if(nes_ppu.dot == 260 && rendering() ) Cartridge_signal_scanline();
 
 	}
 	
@@ -504,7 +511,7 @@ void scanline_cycle(Scanline s)
 
 // PPU scanlines cycles:
 
-void step(){
+void PPU_step(){
 
 	switch(nes_ppu.scanline)
 	{
@@ -530,3 +537,15 @@ void step(){
 	}
 
 }
+
+void PPU_reset(){
+
+	nes_ppu.frameOdd = FALSE;
+	nes_ppu.scanline = 0;
+	nes_ppu.dot = 0;
+	memset(nes_ppu.ciRam,0xFF,sizeof(nes_ppu.ciRam));
+	memset(nes_ppu.oamMem, 0x00, sizeof(nes_ppu.oamMem));
+
+
+}
+

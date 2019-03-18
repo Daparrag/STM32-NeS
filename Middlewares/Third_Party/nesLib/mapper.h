@@ -1,6 +1,6 @@
 #ifndef _MAPPER_H_
 #define _MAPPER_H_
-
+#include <stdio.h>
 #include "common.h"
 
 
@@ -11,7 +11,7 @@ typedef struct
 	uint8_t	(*read)( uint16_t addr );
 	uint8_t	(*write)( uint16_t addr, uint8_t v );
 	uint8_t	(*chr_read)( uint16_t addr );
-	uint8_t (*ch_write)( uint16_t addr, uint8_t v );
+	uint8_t (*chr_write)( uint16_t addr, uint8_t v );
 	void 	(*signal_scanline)( void );
 	void  (*mapper) (uint8_t * rom);
 
@@ -27,16 +27,17 @@ typedef struct
 	uint32_t chrMap[8];
 
 	/* mapper functions */
-	 fmapper mapper_op;
+	 fmapper map_fun;
 	 uint8_t *prg, *chr, *prgRam;
 	 uint32_t prgSize, chrSize, prgRamSize;
 }MAPPER;
 
-extern MAPPER mapper;
+extern MAPPER mapperStr;
 
-void MAPPER_init(uint8_t * rom);
+void mapper(uint8_t * rom);
 void map_prg(int pageKBs, int slot, int bank);
-void map_chr(int pageKBs, int slot, int bank)
-
+void map_chr(int pageKBs, int slot, int bank);
+uint8_t mapper_loaded();
+void mapper_delete();
 
 #endif

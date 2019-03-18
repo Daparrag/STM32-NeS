@@ -20,13 +20,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
-#include "stm32f4_discovery_lcd.h"
-#include "stm32f4_discovery_sdio_sd.h"
-#include "ff.h"
 #include "ppu.h"
 #include "palette.h"
+#include "cartridge.h"
+#include "background.h"
+#include "nes_gui.h"
+
+
 
 
 #ifndef TRUE
@@ -40,37 +44,67 @@
   * @{
   */ 
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-#define MESSAGE1   "     STM32F4xx      " 
-#define MESSAGE2   " Device running on  " 
-#define MESSAGE3   " stm32f4_discovery  " 
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
   
+
+
+
 /* Private functions ---------------------------------------------------------*/
-static void NVIC_Configuration(void);
+//static void NVIC_Configuration(void);
+//static void test_sdCard();
+
 
 static void test_palette()
 {
+
+	nes_background();
+
+//			LCD_Clear(LCD_COLOR_BLACK);
+//			LCD_DrawPicture(0,0,320,240,(uint8_t *)&background);
+
+
+//	const uint16_t row_px[256u] =
+//	{0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f,
+//	 0x1f, 0x1f, 0x1f, 0x1f};
+//
+//	LCD_nes_rowplot(row_px, 0, 256,32);
+
 //	uint8_t index_x = 0;
 //	uint8_t index_y = 0;
+////
+//	uint8_t idx_x = 0;
+//	uint8_t idx_y = 0;
 //
-	uint8_t idx_x = 0;
-	uint8_t idx_y = 0;
-
-
-	uint8_t i = 0;
-	for(i=0; i < 92; i++){
-		LCD_DrawFilledRect(idx_x,idx_y,idx_x+16,idx_y+16,*(nesRgb+i),*(nesRgb+i));
-		idx_x+=16;
-		if(i % 32 == 0 )
-			idx_y+=16;
-	}
-
-
-
+//
+//	uint8_t i = 0;
+//	for(i=0; i < 92; i++){
+//		LCD_DrawFilledRect(idx_x,idx_y,idx_x+16,idx_y+16,*(nesRgb+i),*(nesRgb+i));
+//		idx_x+=16;
+//		if(i % 32 == 0 )
+//			idx_y+=16;
+//	}
 
 //	for(idx=0; idx < 96; idx++ )
 //	{
@@ -93,6 +127,11 @@ static void test_palette()
 //		if(index_x==0)index_y=(index_y+30)%256;
 //
 //	}
+}
+
+
+static void test_sdCard(){
+	load("Pac-Man.nes");
 }
 
 
@@ -121,6 +160,9 @@ int main(void)
 
   STM32f4_Discovery_LCD_Init();
 
+
+
+  //uint8_t *bytes3 = (uint8_t*)malloc(10);
   /* Display message on stm32f4_discovery LCD **********************************/
   /* Clear the LCD */ 
   //LCD_Clear(LCD_COLOR_WHITE);
@@ -128,7 +170,7 @@ int main(void)
   /* Set the LCD Back Color */
   //LCD_SetBackColor(LCD_COLOR_BLUE);
   /* Set the LCD Text Color */
-  //LCD_SetTextColor(LCD_COLOR_WHITE);
+	//LCD_SetTextColor(LCD_COLOR_WHITE);
   //LCD_DisplayStringLine(LINE(3), (uint8_t *)MESSAGE1);
   //LCD_DisplayStringLine(LINE(4), (uint8_t *)MESSAGE2);
   //LCD_DisplayStringLine(LINE(5), (uint8_t *)MESSAGE3);
@@ -137,7 +179,7 @@ int main(void)
 
   /* LCD RGB Test */
   test_palette();
- // test_cpu();
+  //test_sdCard();
   while (1);
 }
 
@@ -146,25 +188,29 @@ int main(void)
   * @param  None
   * @retval None
   */
-static void NVIC_Configuration(void)
-{
-  NVIC_InitTypeDef NVIC_InitStructure;
+//static void NVIC_Configuration(void)
+//{
+//  NVIC_InitTypeDef NVIC_InitStructure;
+//
+//  /* Configure the NVIC Preemption Priority Bits */
+//  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+//
+//  NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
+//  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+//  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+//  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//  NVIC_Init(&NVIC_InitStructure);
+//  NVIC_InitStructure.NVIC_IRQChannel = SD_SDIO_DMA_IRQn;
+//  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+//  NVIC_Init(&NVIC_InitStructure);
+//}
 
-  /* Configure the NVIC Preemption Priority Bits */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
-  NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  NVIC_InitStructure.NVIC_IRQChannel = SD_SDIO_DMA_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-  NVIC_Init(&NVIC_InitStructure);
-}
-
-
-
+/**
+  * @brief  Delay
+  * @param  None
+  * @retval None
+  */
 #ifdef  USE_FULL_ASSERT
 
 /**

@@ -8,6 +8,7 @@
 typedef struct _M6502		M6502; //M6502 vCPU define
 typedef struct _M6502_Registers	M6502_Registers; //M6502 vRegister define
 typedef uint16_t (*Mode)(void);              // Addressing mode.
+typedef uint16_t cpu_addr_t; // 16-bit memory address
 
 #define CPU6502_NMIVector  0xfffa
 #define CPUM6502_RSTVector 0xfffc
@@ -44,10 +45,9 @@ struct _M6502
 
 
 void M6502_set_nmi();
-
 int dmc_read(void*, cpu_addr_t addr);
-void power();
-void run_frame();
+void CPU_power();
+void CPU_run_frame();
 
 #endif /*__m6502_h*/
 

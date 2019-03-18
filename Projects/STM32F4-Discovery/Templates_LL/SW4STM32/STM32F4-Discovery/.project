@@ -363,7 +363,7 @@
 		<link>
 			<name>Example/SW4STM32/syscalls.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/syscalls.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/Src/syscalls.c</locationURI>
 		</link>
 		<link>
 			<name>Example/User/main.c</name>
@@ -394,6 +394,41 @@
 			<name>middleware/nesLib/CPU_6502.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/CPU_6502.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/SDcard.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/SDcard.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/background.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/background.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/cartridge.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/cartridge.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/mapper.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/mapper.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/mapper0.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/mapper0.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/mapper1.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/mapper1.c</locationURI>
+		</link>
+		<link>
+			<name>middleware/nesLib/nes_gui.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Middlewares/Third_Party/nesLib/nes_gui.c</locationURI>
 		</link>
 		<link>
 			<name>middleware/nesLib/palette.c</name>

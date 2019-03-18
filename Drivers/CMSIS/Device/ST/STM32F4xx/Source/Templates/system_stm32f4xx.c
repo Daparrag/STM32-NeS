@@ -417,6 +417,13 @@ static void SetSysClock(void)
 
 }
 
+
+uint32_t GetSysClock(){
+
+	return SystemCoreClock;
+}
+
+
 /**
   * @brief  Setup the external memory controller. Called in startup_stm32f4xx.s 
   *          before jump to __main

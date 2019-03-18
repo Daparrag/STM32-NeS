@@ -346,6 +346,11 @@ typedef struct {
 	WCHAR*	lfn;			/* Pointer to the LFN working buffer */
 	WORD	lfn_idx;		/* Last matched LFN index number (0xFFFF:No LFN) */
 #endif
+
+#if _USE_FIND
+	const TCHAR*	pat;	/* Pointer to the name matching pattern */
+#endif
+
 } DIR;
 
 
@@ -473,7 +478,21 @@ int ff_req_grant (_SYNC_t);			/* Lock sync object */
 void ff_rel_grant (_SYNC_t);		/* Unlock sync object */
 #endif
 
+#if _USE_FIND && _FS_MINIMIZE <= 1
 
+FRESULT f_findfirst (DIR* dp,				/* Pointer to the blank directory object */
+		FILINFO* fno,			/* Pointer to the file information structure */
+		const TCHAR* path,		/* Pointer to the directory to open */
+		const TCHAR* pattern	/* Pointer to the matching pattern */);
+
+
+FRESULT f_findnext (
+	DIR* dp,		/* Pointer to the open directory object */
+	FILINFO* fno	/* Pointer to the file information structure */
+);
+
+
+#endif
 
 
 /*--------------------------------------------------------------*/

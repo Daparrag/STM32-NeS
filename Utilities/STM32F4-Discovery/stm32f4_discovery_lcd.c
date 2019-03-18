@@ -1576,6 +1576,20 @@ void LCD_FillPolyLine(pPoint Points, uint16_t PointCount)
   LCD_SetTextColor(TextColor);
 }
 
+void LCD_nes_rowplot(uint16_t * pixels , uint16_t row, uint16_t length, uint16_t offset){
+  uint32_t i=0;
+  if(length > LCD_PIXEL_WIDTH) return;
+  LCD_SetCursor(offset, row);
+   LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+  for(i=0; i <length; i++)
+  {
+    LCD_Data = *pixels;
+    pixels ++;
+  }
+
+}
+
+
 
 #ifndef USE_Delay
 /**
